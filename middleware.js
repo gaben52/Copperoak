@@ -1,0 +1,12 @@
+import { updateSession } from '@/lib/supabase/middleware';
+
+export async function middleware(request) {
+  return await updateSession(request);
+}
+
+export const config = {
+  matcher: [
+    // Run on every route except static assets and image optimization files.
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
+};
