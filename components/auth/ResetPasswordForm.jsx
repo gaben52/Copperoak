@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { authCSS } from './styles';
+import AuthBrand from './AuthBrand';
 import { validatePassword, PASSWORD_HINT } from './passwordPolicy';
 
 export default function ResetPasswordForm() {
@@ -52,33 +53,34 @@ export default function ResetPasswordForm() {
     <div className="auth-wrap">
       {/* dangerouslySetInnerHTML — see the note in LoginForm.jsx. */}
       <style dangerouslySetInnerHTML={{ __html: authCSS() }} />
-      <div className="of-card auth-card">
+      <div className="auth-card">
+        <AuthBrand />
         <div className="auth-title">Set a new password</div>
         {success ? (
           <>
-            <div className="auth-success">Password updated. You can now sign in.</div>
-            <a className="of-btn btn-gold auth-submit" href="/login" style={{ textDecoration: 'none', textAlign: 'center' }}>Go to sign in</a>
+            <div className="ah-banner-success">Password updated. You can now sign in.</div>
+            <a className="ah-btn-gold auth-submit" href="/login" style={{ textDecoration: 'none' }}>Go to sign in</a>
           </>
         ) : linkInvalid ? (
           <>
-            <div className="auth-error">This reset link is invalid or has expired.</div>
-            <a className="of-btn auth-submit" href="/forgot-password" style={{ textDecoration: 'none', textAlign: 'center' }}>Request a new link</a>
+            <div className="ah-banner-error">This reset link is invalid or has expired.</div>
+            <a className="ah-btn-plain auth-submit" href="/forgot-password" style={{ textDecoration: 'none' }}>Request a new link</a>
           </>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div className="auth-field">
+            <div className="ah-field">
               <label htmlFor="password">New password</label>
               <input id="password" type="password" autoComplete="new-password" required
                 value={password} onChange={(e) => setPassword(e.target.value)} />
               <div className="auth-hint">{PASSWORD_HINT}</div>
             </div>
-            <div className="auth-field">
+            <div className="ah-field">
               <label htmlFor="confirm">Confirm password</label>
               <input id="confirm" type="password" autoComplete="new-password" required
                 value={confirm} onChange={(e) => setConfirm(e.target.value)} />
             </div>
-            {error && <div className="auth-error">{error}</div>}
-            <button type="submit" className="btn-gold auth-submit" disabled={loading}>
+            {error && <div className="ah-banner-error">{error}</div>}
+            <button type="submit" className="ah-btn-gold auth-submit" disabled={loading}>
               {loading ? 'Saving…' : 'Set password'}
             </button>
           </form>

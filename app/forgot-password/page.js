@@ -1,7 +1,7 @@
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 
 export const metadata = {
-  title: 'OakFlow — Reset password',
+  title: 'Acquire Hub — Reset password',
 };
 
 export default function ForgotPasswordPage() {

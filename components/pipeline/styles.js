@@ -9,34 +9,66 @@ const PIPELINE_LAYOUT = `
 body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
 
 /* ============================ Page header ============================ */
+/* Full-bleed dark bar, matching Home/Admin's sidebar-shell palette — pulled out to the viewport
+   edges with negative margins equal to the page's own gutter (kept in the same token so it can
+   never drift out of sync at any breakpoint), then padded back in by the same amount. */
 .header{
-  display:flex;justify-content:space-between;align-items:flex-start;
+  display:flex;justify-content:space-between;align-items:center;
   flex-wrap:wrap;gap:var(--of-s4);
-  margin-bottom:var(--of-s5);
-  padding-bottom:var(--of-s4);
-  border-bottom:1px solid var(--of-border);
+  margin:calc(-1 * var(--of-gutter)) calc(-1 * var(--of-gutter)) var(--of-s5);
+  padding:16px var(--of-gutter);
+  background:#12151c;
+  border-bottom:1px solid rgba(255,255,255,.07);
 }
 .brand,.brand:hover,.brand:visited,.brand *{ text-decoration:none!important; }
 .brand{ display:flex;align-items:center;gap:12px;min-width:0;color:inherit; }
 .brand-icon{
-  width:36px;height:36px;flex:none;
-  border-radius:var(--of-r);
-  background:var(--of-oak-soft);
-  border:1px solid #e6dccb;
-  color:var(--of-oak);
+  width:48px;height:48px;flex:none;
   display:flex;align-items:center;justify-content:center;
   font-size:17px;line-height:1;
 }
+.brand-icon img{ display:block;max-width:100%;max-height:100%; }
 .brand h1{
-  margin:0;font-size:19px;font-weight:650;letter-spacing:-.015em;color:var(--of-text);
+  margin:0;font-size:19px;font-weight:650;letter-spacing:-.015em;color:#fff;
 }
-.brand h1 .brand-a{ color:var(--of-text); }
-.brand h1 .brand-b{ color:var(--of-text-3);font-weight:500; }
+.brand h1 .brand-a{ color:#fff; }
+.brand h1 .brand-b{ color:var(--of-oak); }
 .brand .tag{
-  font-size:11.5px;font-weight:500;color:var(--of-text-3);
+  font-size:11.5px;font-weight:500;color:rgba(255,255,255,.55);
   letter-spacing:.04em;margin-top:1px;
 }
 .header-actions{ display:flex;gap:7px;flex-wrap:wrap;align-items:center; }
+/* Every header button except the gold primary one gets a translucent light-on-dark pill instead
+   of the shared design system's light-page button look, which would otherwise disappear against
+   this dark bar. :not(.btn-gold) keeps the primary button's own styling (design-system.js)
+   untouched — this selector is one class + one type, deliberately more specific than a bare
+   ".btn-gold" so it can't accidentally win that fight. */
+.header-actions button:not(.btn-gold){
+  background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:#fff;box-shadow:none;
+}
+.header-actions button:not(.btn-gold):hover{ background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.24); }
+.header-actions button:not(.btn-gold).active{ background:var(--of-oak);border-color:var(--of-oak);color:#241a06; }
+
+/* ============================ Banner (photo + month nav) ============================ */
+.pipeline-banner{
+  border-radius:var(--of-r-lg);overflow:hidden;position:relative;
+  padding:18px 20px;margin-bottom:var(--of-s4);min-height:88px;
+  display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;
+  background:
+    linear-gradient(100deg,rgba(9,12,16,.62) 0%,rgba(9,12,16,.34) 55%,rgba(9,12,16,.16) 100%),
+    url('/assets/pipeline-banner.jpg');
+  background-size:cover;background-position:center 55%;
+}
+.pipeline-banner-text{ text-align:right; }
+.pipeline-banner-tagline{
+  margin:0 0 5px;font-size:13px;font-weight:500;color:#fff;
+  text-shadow:0 1px 3px rgba(0,0,0,.85),0 2px 10px rgba(0,0,0,.6);
+}
+.pipeline-banner-pillars{
+  font-size:9.5px;font-weight:650;letter-spacing:.14em;color:var(--of-oak);text-transform:uppercase;
+  text-shadow:0 1px 3px rgba(0,0,0,.85),0 2px 10px rgba(0,0,0,.6);
+}
+.pipeline-banner-pillars i{ font-style:normal;color:rgba(255,255,255,.5);margin:0 6px; }
 
 /* ============================ Month bar ============================ */
 .month-bar{
@@ -44,9 +76,8 @@ body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
   background:var(--of-surface);
   border:1px solid var(--of-border);
   border-radius:var(--of-r-lg);
-  box-shadow:var(--of-shadow-xs);
+  box-shadow:0 10px 24px -12px rgba(6,9,13,.4);
   padding:10px 14px;
-  margin-bottom:var(--of-s4);
 }
 .month-bar > button{ width:var(--of-h);padding:0;font-size:11px;color:var(--of-text-2); }
 .month-label{
@@ -68,9 +99,18 @@ body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
   border:1px solid var(--of-border);
   border-radius:var(--of-r-lg);
   box-shadow:var(--of-shadow-xs);
-  padding:13px 15px;
+  padding:12px 15px;
   min-width:0;
+  display:flex;align-items:center;gap:11px;
 }
+.stat-icon{
+  width:32px;height:32px;border-radius:var(--of-r);flex:none;
+  display:flex;align-items:center;justify-content:center;
+}
+.stat-icon-red{ background:var(--of-err-bg);color:var(--of-err-text); }
+.stat-icon-blue{ background:var(--of-info-bg);color:var(--of-info-text); }
+.stat-icon-green{ background:var(--of-ok-bg);color:var(--of-ok-text); }
+.stat-icon-gold{ background:var(--of-oak-soft);color:var(--of-oak-dim); }
 .stat .label{
   font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
   color:var(--of-text-3);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -114,12 +154,16 @@ body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
 
 /* ============================ County tabs ============================ */
 .pager-bar{ display:flex;align-items:center;gap:8px;margin-bottom:var(--of-s4); }
-.pager-bar > button{ width:var(--of-h);padding:0;flex:none;font-size:11px;color:var(--of-text-2); }
+.pager-bar > button{
+  width:var(--of-h);padding:0;flex:none;font-size:11px;
+  background:#12151c;border-color:#12151c;color:rgba(255,255,255,.7);
+}
+.pager-bar > button:hover{ background:#1b202b;border-color:#1b202b;color:#fff; }
 .page-tabs{
   display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;flex:1;
-  padding:3px;
-  background:var(--of-surface);
-  border:1px solid var(--of-border);
+  padding:4px;
+  background:#12151c;
+  border:1px solid rgba(255,255,255,.07);
   border-radius:var(--of-r-lg);
   box-shadow:var(--of-shadow-xs);
 }
@@ -127,21 +171,22 @@ body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
   height:30px;padding:0 12px;flex-shrink:0;
   background:transparent;border:1px solid transparent;box-shadow:none;
   border-radius:var(--of-r);
-  color:var(--of-text-2);font-size:12.5px;font-weight:500;
+  color:rgba(255,255,255,.62);font-size:12.5px;font-weight:500;
   white-space:nowrap;
 }
-.page-tab:hover{ background:var(--of-surface-3);border-color:transparent; }
-/* Active state reads clearly without a bright fill */
+.page-tab:hover{ background:rgba(255,255,255,.08);border-color:transparent;color:#fff; }
+/* Active state — a soft gold-tinted fill rather than a bright block, matching the sidebar's own
+   active-nav treatment on Home/Admin (components/shell/styles.js's .ah-nav-item.active). */
 .page-tab.active{
-  background:var(--of-accent);border-color:var(--of-accent);
-  color:var(--of-accent-text);font-weight:550;
+  background:rgba(215,174,92,.18);border-color:rgba(215,174,92,.35);
+  color:var(--of-oak);font-weight:600;
 }
-.page-tab.won-tab{ color:var(--of-ok-text); }
-.page-tab.won-tab.active{ background:var(--of-ok-text);border-color:var(--of-ok-text);color:#fff; }
-.page-tab.lost-tab{ color:var(--of-warn-text); }
-.page-tab.lost-tab.active{ background:var(--of-warn-text);border-color:var(--of-warn-text);color:#fff; }
-.page-tab.archived-tab{ color:var(--of-err-text); }
-.page-tab.archived-tab.active{ background:var(--of-err-text);border-color:var(--of-err-text);color:#fff; }
+.page-tab.won-tab{ color:#5fd68a; }
+.page-tab.won-tab.active{ background:rgba(31,157,85,.22);border-color:rgba(31,157,85,.4);color:#7be3a4; }
+.page-tab.lost-tab{ color:#e0a94f; }
+.page-tab.lost-tab.active{ background:rgba(224,169,79,.2);border-color:rgba(224,169,79,.4);color:#f0c483; }
+.page-tab.archived-tab{ color:#e08a7d; }
+.page-tab.archived-tab.active{ background:rgba(224,138,125,.2);border-color:rgba(224,138,125,.4);color:#f0a99e; }
 
 /* ============================ Won dashboard ============================ */
 .won-dash{
@@ -212,8 +257,11 @@ body{ padding:var(--of-gutter) var(--of-gutter) 48px; }
 }
 table{ min-width:1500px; }
 th{ cursor:pointer;user-select:none; }
-th:hover{ color:var(--of-text);background:var(--of-surface-3); }
 td{ white-space:nowrap; }
+/* Scoped to .table-wrap specifically (not the shared "thead th" rule in design-system.js) so this
+   doesn't reach Property Operations' own tables, which aren't part of this pass. */
+.table-wrap thead th{ background:#12151c;color:rgba(255,255,255,.75);border-bottom-color:rgba(255,255,255,.08); }
+.table-wrap th:hover{ color:#fff;background:#1b202b; }
 
 /* Inline editable cells: kept a subtle green so the "green = fields you fill in"
    legend stays accurate, but at a fraction of the original saturation. */
@@ -228,12 +276,14 @@ td.input-cell input{
 td.input-cell input:focus{ background:#e2f0e8; }
 td.input-cell input[readonly]{ cursor:default;background:var(--of-surface-2);color:var(--of-text-2);border-color:var(--of-border); }
 
-/* Max Bid — the decision field, flagged with the oak accent rather than gold */
-th.maxbid-col{ background:var(--of-oak-soft);color:#6f5530; }
+/* Max Bid — the decision field, flagged with the brand accent. Selector qualified with
+   ".table-wrap thead" so it stays more specific than the dark ".table-wrap thead th" rule above
+   and doesn't just get overridden by it. */
+.table-wrap thead th.maxbid-col{ background:#12151c;color:var(--of-oak); }
 td.maxbid-col input{
   background:var(--of-oak-soft);
-  border-color:#e6dccb;
-  color:#6f5530;
+  border-color:#f0dfb0;
+  color:var(--of-oak-dim);
   font-weight:600;
   text-align:right;
   font-variant-numeric:tabular-nums;
@@ -404,28 +454,38 @@ tr.dnb-row td.input-cell input,tr.dnb-row td.col-num{ opacity:1; }
   margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
   color:var(--of-text-3);
 }
-/* Two term/meaning tables side by side — halves the section's height by using the panel's full
-   width instead of stacking all 15 rows in one tall column. Each .formula-table is independently
-   a term (left) / meaning (right) grid; .formula-row uses display:contents so its two children
-   become direct items of that grid — that's what lets a plain two-column grid still read as
-   aligned term/meaning rows instead of a left-to-right, top-to-bottom masonry flow. */
-.formula-columns{ display:grid;grid-template-columns:1fr 1fr;column-gap:36px; }
-.formula-table{ display:grid;grid-template-columns:minmax(120px,168px) 1fr;column-gap:20px;align-content:start; }
+/* Formula & Definition Guide — 3 labeled categories, each stacked full-width rather than sitting
+   in side-by-side columns (columns of 4/6/5 rows made for a ragged, uneven bottom edge, and
+   per-row icon badges pushed only some terms' text further right than others — both read as
+   "misaligned"). Each category is one real CSS grid instead (.formula-table, with .formula-row
+   using display:contents so its term/meaning children become direct grid items) — the same
+   technique the very first version of this guide used, which is what gives every term a shared
+   left edge and every meaning a shared left edge, all the way down the list. "Needs Attention"
+   keeps a warm-highlighted row instead of a bordered card, so it still stands out without
+   breaking the grid's alignment. */
+.formula-group{ margin-bottom:20px; }
+.formula-group.last{ margin-bottom:0; }
+.formula-category-title{
+  font-size:10.5px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--of-text-3);margin-bottom:4px;padding-bottom:8px;border-bottom:1px solid var(--of-border);
+}
+.formula-table{ display:grid;grid-template-columns:minmax(150px,220px) 1fr;column-gap:24px;align-content:start; }
 .formula-row{ display:contents; }
 .formula-term{
-  padding:7px 0;color:var(--of-oak);font-weight:650;font-size:12px;
+  padding:9px 0;color:var(--of-oak);font-weight:650;font-size:12.5px;
   letter-spacing:.01em;border-bottom:1px solid var(--of-border);
 }
 .formula-meaning{
-  padding:7px 0;color:var(--of-text-2);font-size:12px;line-height:1.48;
+  padding:9px 0;color:var(--of-text-2);font-size:12.5px;line-height:1.5;
   border-bottom:1px solid var(--of-border);
 }
 .formula-table .formula-row:last-child .formula-term,
 .formula-table .formula-row:last-child .formula-meaning{ border-bottom:none; }
+.formula-row-warn .formula-term,
+.formula-row-warn .formula-meaning{ background:var(--of-warn-bg); }
 
 /* ============================ Responsive ============================ */
 @media (max-width:1100px){ .stats{ grid-template-columns:repeat(3,1fr); } }
-@media (max-width:900px){ .formula-columns{ grid-template-columns:1fr; } }
 @media (max-width:700px){
   .formula-table{ grid-template-columns:1fr; }
   .formula-term{ padding-bottom:2px;border-bottom:none; }
@@ -434,12 +494,14 @@ tr.dnb-row td.input-cell input,tr.dnb-row td.col-num{ opacity:1; }
 @media (max-width:860px){
   .header{ gap:12px; }
   .month-label{ font-size:15px;min-width:0; }
+  .pipeline-banner{ flex-direction:column;align-items:flex-start; }
+  .pipeline-banner-text{ text-align:left; }
   .filters input[type=text]{ width:100%;flex:1 1 100%; }
   .detail-grid{ grid-template-columns:1fr 1fr; }
   .detail-modal{ width:100%; }
 }
 @media (max-width:560px){
-  .brand-icon{ width:32px;height:32px;font-size:15px; }
+  .brand-icon{ width:38px;height:38px;font-size:15px; }
   .brand h1{ font-size:17px; }
   .header-actions{ gap:6px; }
   .header-actions button{ height:var(--of-h-sm);padding:0 10px;font-size:12px; }

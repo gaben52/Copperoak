@@ -1,7 +1,7 @@
 import ChangePasswordForm from '@/components/auth/ChangePasswordForm';
 
 export const metadata = {
-  title: 'OakFlow — Change password',
+  title: 'Acquire Hub — Change password',
 };
 
 export default function ChangePasswordPage() {

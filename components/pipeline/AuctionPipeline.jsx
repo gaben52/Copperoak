@@ -23,6 +23,7 @@
 // based on their profiles.role, gated server-side in lib/supabase/middleware.js.
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useDispatch, useSelector } from 'react-redux';
 import { AnimatePresence, motion } from 'framer-motion';
 import { US_STATES, STATUSES } from './constants';
@@ -39,6 +40,7 @@ import { createClient } from '@/lib/supabase/client';
 import { allowedFieldsForProfile, canCreateProperty } from '@/lib/permissions/fieldGroups';
 import { pipelineCSS } from './styles';
 import { RowsTable } from './RowsTable';
+import FormulaGuide from './FormulaGuide';
 import DetailModal from './DetailModal';
 import { BulkPasteModal, BulkDateModal } from './BulkModals';
 import ImportPreviewModal from './ImportPreviewModal';
@@ -89,6 +91,44 @@ function getCountyPages(rows) {
   });
   return Object.values(map).sort((a, b) => (a.state + a.county).localeCompare(b.state + b.county));
 }
+
+// Small icon badges for the stat cards — purely decorative, matching the Home dashboard's own
+// stat-tile icon pattern (components/design-system.js has no icon set of its own to reuse here).
+const STAT_ICON = {
+  attention: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 3.5 17.5 16h-15Z" /><path d="M10 8.3v3.4M10 14.1h.01" />
+    </svg>
+  ),
+  total: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><path d="M4 5.5h12M4 10h12M4 14.5h8" /></svg>
+  ),
+  profit: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3.5 14 8 9.2l3 3L17 5.5" /><path d="M12.5 5.5H17v4.5" />
+    </svg>
+  ),
+  arv: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 3v14M13.5 6.2c0-1.2-1.5-2.2-3.5-2.2s-3.5.9-3.5 2.3c0 3 7 1.4 7 4.4 0 1.4-1.6 2.3-3.5 2.3s-3.7-1-3.7-2.3" />
+    </svg>
+  ),
+  complete: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10" r="7" /><path d="M7 10.2l2 2 4-4.4" />
+    </svg>
+  ),
+  upcoming: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="10" cy="10.5" r="7" /><path d="M10 6.5v4l2.8 2" />
+    </svg>
+  ),
+  updated: (
+    <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3.5" y="4.5" width="13" height="12" rx="1.6" /><path d="M3.5 8.3h13M7 3v3M13 3v3" />
+    </svg>
+  ),
+};
 
 export default function AuctionPipeline({ variant, hasTitleReports }) {
   const isPartner = variant === 'partner';
@@ -181,6 +221,21 @@ export default function AuctionPipeline({ variant, hasTitleReports }) {
     fetchMyProfile().then(setMyProfile).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Deep link from the Home page's global search ("/pipeline?open=<id>") — opens that property's
+  // detail modal directly once it's actually loaded. selectProperty() looks the row up in the full
+  // Redux items list (lib/redux/slices/propertiesSlice.js), not whatever's currently filtered into
+  // view, so this works regardless of which county tab happens to be selected.
+  const searchParams = useSearchParams();
+  const openId = searchParams.get('open');
+  const openIdHandled = useRef(null);
+  useEffect(() => {
+    if (!openId || openIdHandled.current === openId || !allRecords.length) return;
+    if (allRecords.some((r) => r.id === openId)) {
+      dispatch(selectProperty(openId));
+      openIdHandled.current = openId;
+    }
+  }, [openId, allRecords, dispatch]);
 
   // Reflects this specific user's actual effective permissions (role defaults + individual
   // overrides an admin may have granted or removed) — not a hardcoded isPartner/role check. Used
@@ -564,17 +619,13 @@ export default function AuctionPipeline({ variant, hasTitleReports }) {
       <style dangerouslySetInnerHTML={{ __html: pipelineCSS() }} />
 
       <div className="header">
-        <a className="brand" href="/" title="Back to the OakFlow home screen">
+        <a className="brand" href="/" title="Back to the Acquire Hub home screen">
           <div className="brand-icon" aria-hidden="true">
-            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M4 14.5c4.5 0 7-2.2 8.4-5.1" />
-              <path d="M10 16.5c0-5.2 2.6-8.6 6-10" />
-              <path d="M3.5 8.5c3 0 5-1.1 6.2-3" />
-            </svg>
+            <img src="/assets/acquire-hub-logo.png" alt="" width="44" height="44" />
           </div>
           <div>
-            <h1><span className="brand-a">Oak</span><span className="brand-b">Flow</span></h1>
-            <div className="tag">{isPartner ? <>Partner Portal &middot; {partnerName || '—'}</> : 'Auction Pipeline'}</div>
+            <h1><span className="brand-a">Acquire</span> <span className="brand-b">Hub</span></h1>
+            <div className="tag">{isPartner ? <>Partner Portal &middot; {partnerName || '—'}</> : <>Auction Pipeline &middot; {myProfile?.fullName || 'Admin'}</>}</div>
           </div>
         </a>
         <div className="header-actions">
@@ -596,27 +647,59 @@ export default function AuctionPipeline({ variant, hasTitleReports }) {
         </div>
       </div>
 
-      <div className="month-bar">
-        <button onClick={() => changeMonth(-1)}>&#9664;</button>
-        <div className="month-label">
-          <b>{monthLabel(currentMonth)}</b>
-          {currentMonth === 'Unscheduled' && <span style={{ color: 'var(--muted)', fontSize: 14, fontWeight: 600 }}> Fill in a Sale Date on each property to file it under its auction month.</span>}
+      <div className="pipeline-banner">
+        <div className="month-bar">
+          <button onClick={() => changeMonth(-1)}>&#9664;</button>
+          <div className="month-label">
+            <b>{monthLabel(currentMonth)}</b>
+            {currentMonth === 'Unscheduled' && <span style={{ color: 'var(--muted)', fontSize: 14, fontWeight: 600 }}> Fill in a Sale Date on each property to file it under its auction month.</span>}
+          </div>
+          <button onClick={() => changeMonth(1)}>&#9654;</button>
+          <select value={currentMonth} onChange={(e) => jumpToMonth(e.target.value)}>
+            {getAvailableMonths(allRecords, currentMonth).map((k) => <option value={k} key={k}>{monthLabel(k)}</option>)}
+          </select>
         </div>
-        <button onClick={() => changeMonth(1)}>&#9654;</button>
-        <select value={currentMonth} onChange={(e) => jumpToMonth(e.target.value)}>
-          {getAvailableMonths(allRecords, currentMonth).map((k) => <option value={k} key={k}>{monthLabel(k)}</option>)}
-        </select>
+        <div className="pipeline-banner-text">
+          <p className="pipeline-banner-tagline">Acquire smarter. Move faster. Build bigger.</p>
+          <div className="pipeline-banner-pillars">PEOPLE<i>&middot;</i>PROCESS<i>&middot;</i>PROPERTIES<i>&middot;</i>FREEDOM</div>
+        </div>
       </div>
 
       <div className="stats">
-        <div className="stat red" style={{ cursor: 'pointer' }} onClick={() => dispatch(setAttentionOnly(true))} title="Sale date within 72 hours with missing ARV, Max Bid, or unresolved title"><div className="label">NEEDS ATTENTION</div><div className="value">{atRiskCount}</div></div>
-        <div className="stat"><div className="label">TOTAL PROPERTIES</div><div className="value">{activeRows.length}</div></div>
-        <div className="stat green" title="Average projected profit margin across this month's active properties"><div className="label">AVG PROFIT %</div><div className="value">{avgProfitPct.toFixed(1)}%</div></div>
-        <div className="stat gold" title="ARV = After Repair Value — average estimated resale value across this month's active properties"><div className="label">AVERAGE ARV</div><div className="value">{fmtMoney(Math.round(avgARV)) || '$0'}</div></div>
-        <div className="stat" title="Share of properties with Open Bid, ARV, and Max Bid all filled in"><div className="label">% COMPLETE</div><div className="value">{pctComplete}%<span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}> ({completeCount}/{activeRows.length})</span></div></div>
-        <div className="stat"><div className="label">SALES NEXT 7 DAYS</div><div className="value" style={{ color: 'var(--yellow)' }}>{upcomingCount}</div></div>
-        <div className="stat"><div className="label">LAST UPDATED</div><div className="value" style={{ fontSize: 15 }}>{new Date().toLocaleDateString()}</div></div>
-        {countyStat && <div className="stat gold"><div className="label">{countyStat.name} COMPLETE</div><div className="value">{countyStat.pct}%<span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}> ({countyStat.complete}/{countyStat.total})</span></div></div>}
+        <div className="stat red" style={{ cursor: 'pointer' }} onClick={() => dispatch(setAttentionOnly(true))} title="Sale date within 72 hours with missing ARV, Max Bid, or unresolved title">
+          <span className="stat-icon stat-icon-red">{STAT_ICON.attention}</span>
+          <div><div className="label">NEEDS ATTENTION</div><div className="value">{atRiskCount}</div></div>
+        </div>
+        <div className="stat">
+          <span className="stat-icon stat-icon-blue">{STAT_ICON.total}</span>
+          <div><div className="label">TOTAL PROPERTIES</div><div className="value">{activeRows.length}</div></div>
+        </div>
+        <div className="stat green" title="Average projected profit margin across this month's active properties">
+          <span className="stat-icon stat-icon-green">{STAT_ICON.profit}</span>
+          <div><div className="label">AVG PROFIT %</div><div className="value">{avgProfitPct.toFixed(1)}%</div></div>
+        </div>
+        <div className="stat gold" title="ARV = After Repair Value — average estimated resale value across this month's active properties">
+          <span className="stat-icon stat-icon-gold">{STAT_ICON.arv}</span>
+          <div><div className="label">AVERAGE ARV</div><div className="value">{fmtMoney(Math.round(avgARV)) || '$0'}</div></div>
+        </div>
+        <div className="stat" title="Share of properties with Open Bid, ARV, and Max Bid all filled in">
+          <span className="stat-icon stat-icon-blue">{STAT_ICON.complete}</span>
+          <div><div className="label">% COMPLETE</div><div className="value">{pctComplete}%<span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}> ({completeCount}/{activeRows.length})</span></div></div>
+        </div>
+        <div className="stat">
+          <span className="stat-icon stat-icon-gold">{STAT_ICON.upcoming}</span>
+          <div><div className="label">SALES NEXT 7 DAYS</div><div className="value" style={{ color: 'var(--yellow)' }}>{upcomingCount}</div></div>
+        </div>
+        <div className="stat">
+          <span className="stat-icon stat-icon-blue">{STAT_ICON.updated}</span>
+          <div><div className="label">LAST UPDATED</div><div className="value" style={{ fontSize: 15 }}>{new Date().toLocaleDateString()}</div></div>
+        </div>
+        {countyStat && (
+          <div className="stat gold">
+            <span className="stat-icon stat-icon-gold">{STAT_ICON.complete}</span>
+            <div><div className="label">{countyStat.name} COMPLETE</div><div className="value">{countyStat.pct}%<span style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600 }}> ({countyStat.complete}/{countyStat.total})</span></div></div>
+          </div>
+        )}
       </div>
 
       <div className="toolbar">
@@ -705,41 +788,7 @@ export default function AuctionPipeline({ variant, hasTitleReports }) {
       </div>
 
       <div className="footer">
-        <div className="panel-box">
-          <h3>Formula Guide</h3>
-          <div className="formula-columns">
-            {[
-              [
-                ['ARV', 'After Repair Value. The estimated resale value once the property is renovated. This is the base value used by most formulas below.'],
-                ['Variance', 'ARV minus Max Bid. A quick pre bid screen before repair and closing costs.'],
-                ['Profit', 'ARV multiplied by 0.89, minus Max Bid, minus Reno Cost. The 0.89 factor accounts for typical selling costs.'],
-                ['Profit %', 'Profit divided by ARV.'],
-                ['Open Bid', 'The starting courthouse bid from foreclosurebidlist.com.'],
-                ['Max Bid', 'The maximum amount you are willing to bid on sale day.'],
-                ['% Complete', 'The percentage of properties with Open Bid, ARV, and Max Bid completed.'],
-                ['Bid Ready', 'Automatically set when Clear Title is Clear and Mortgage Balance, ARV, and Max Bid are all completed.'],
-                ['Location', 'The auction location or property rating. Options include Courthouse, Auction.com, Unrated, Low, Medium, High, and DNB.'],
-              ],
-              [
-                ['Do Not Bid', 'Setting Clear Title to Do Not Bid automatically archives the property and moves it to the Archived tab.'],
-                ['Auction Outcome', 'The result of the auction. Unknown is the default. Won moves the property to Won Properties. 3rd Party moves it to Lost Homes and removes it from the active county lists.'],
-                ['Clear 1st Lien', 'The title is confirmed clear and the foreclosing loan is in first lien position. Senior liens are wiped out and the property is automatically promoted to Bid Ready.'],
-                ['Clear 2nd Lien', 'The title is confirmed clear but the foreclosing loan is in second lien position. A senior mortgage may survive the sale. The property is flagged for review and must be moved to Bid Ready manually.'],
-                ['Trustee Info', 'The name, phone number, and email of the foreclosing trustee. This information appears in the property detail panel and can be populated through CSV, Excel, or Bulk Paste imports.'],
-                ['Needs Attention', 'The sale date is within 72 hours and ARV, Max Bid, or Clear Title is still unresolved. The property is flagged with an attention indicator and included in the Needs Attention count.'],
-              ],
-            ].map((col, i) => (
-              <div className="formula-table" key={i}>
-                {col.map(([term, meaning]) => (
-                  <div className="formula-row" key={term}>
-                    <div className="formula-term">{term}</div>
-                    <div className="formula-meaning">{meaning}</div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <FormulaGuide />
       </div>
 
       <AnimatePresence>

@@ -32,11 +32,13 @@ export const OAKFLOW_TOKENS = `
   --of-accent-hover:#2f353c;
   --of-accent-text:#ffffff;
 
-  /* ---- Brand mark accent: an oak/bronze tone, used only for the logo,
-         focus rings, and the active-nav indicator. Never as a fill. ---- */
-  --of-oak:#8a6a3b;
-  --of-oak-soft:#f3eee6;
-  --of-focus-ring:rgba(138,106,59,.28);
+  /* ---- Brand mark accent: Acquire Hub's gold, used for the logo, focus rings, the
+         active-nav indicator, and (below) primary buttons — matches the sidebar/topbar
+         gold used on Home and the Admin screens (components/shell/styles.js's --ah-gold). ---- */
+  --of-oak:#c99a3f;
+  --of-oak-soft:#faf1de;
+  --of-oak-dim:#a9822f;
+  --of-focus-ring:rgba(201,154,63,.30);
 
   /* ---- Status: subtle background, strong readable text ---- */
   --of-ok-bg:#eaf4ee;    --of-ok-text:#1a6b40;   --of-ok-border:#cbe4d6;
@@ -97,7 +99,7 @@ export const OAKFLOW_TOKENS = `
   --text:var(--of-text);
   --muted:var(--of-text-3);
   --gold:var(--of-oak);
-  --gold-dim:#6f5530;
+  --gold-dim:var(--of-oak-dim);
   --green:var(--of-ok-text);
   --green-bg:var(--of-ok-bg);
   --green-border:var(--of-ok-border);
@@ -116,7 +118,7 @@ export const OAKFLOW_TOKENS = `
   --well:var(--of-surface-3);
   --placeholder:var(--of-text-3);
   --brass:var(--of-oak);
-  --brass-dim:#6f5530;
+  --brass-dim:var(--of-oak-dim);
   --brass-hi:var(--of-oak);
   --on-brass:var(--of-accent-text);
   --oxblood:var(--of-err-text);
@@ -125,7 +127,7 @@ export const OAKFLOW_TOKENS = `
   --amber:var(--of-warn-text);
   --stone:var(--of-text-3);
   --teal:var(--of-oak);
-  --teal-dim:#6f5530;
+  --teal-dim:var(--of-oak-dim);
   --scrim-bg:rgba(20,23,26,.42);
   --jade-soft:var(--of-ok-bg);
   --jade-line:var(--of-ok-border);
@@ -213,17 +215,18 @@ button:disabled,.of-btn:disabled{
   opacity:.5;cursor:not-allowed;background:var(--of-surface-2);box-shadow:none;
 }
 
-/* Primary — high contrast, restrained */
+/* Primary — Acquire Hub's gold, matching .ah-btn-gold on Home/Admin (components/shell/styles.js)
+   so the "main action" button reads the same everywhere, not just on the redesigned pages. */
 .of-btn-primary,.btn-primary,.btn-gold{
-  background:var(--of-accent);
-  border-color:var(--of-accent);
-  color:var(--of-accent-text);
+  background:linear-gradient(135deg,#e3bd6e,var(--of-oak));
+  border-color:var(--of-oak);
+  color:#241a06;
   box-shadow:var(--of-shadow-xs);
 }
 .of-btn-primary:hover,.btn-primary:hover,.btn-gold:hover{
-  background:var(--of-accent-hover);
-  border-color:var(--of-accent-hover);
-  color:var(--of-accent-text);
+  filter:brightness(1.05);
+  border-color:var(--of-oak);
+  color:#241a06;
 }
 
 /* Secondary emphasis — neutral, not a second bright color */

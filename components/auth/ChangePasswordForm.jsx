@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { authCSS } from './styles';
+import AuthBrand from './AuthBrand';
 import { validatePassword, PASSWORD_HINT } from './passwordPolicy';
 
 export default function ChangePasswordForm() {
@@ -41,25 +42,26 @@ export default function ChangePasswordForm() {
     <div className="auth-wrap">
       {/* dangerouslySetInnerHTML — see the note in LoginForm.jsx. */}
       <style dangerouslySetInnerHTML={{ __html: authCSS() }} />
-      <div className="of-card auth-card">
+      <div className="auth-card">
+        <AuthBrand />
         <div>
           <div className="auth-title">Create a new password</div>
           <p className="auth-sub">You're signing in with a temporary password. Set a new one to continue.</p>
         </div>
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div className="auth-field">
+          <div className="ah-field">
             <label htmlFor="password">New password</label>
             <input id="password" type="password" autoComplete="new-password" required
               value={password} onChange={(e) => setPassword(e.target.value)} />
             <div className="auth-hint">{PASSWORD_HINT}</div>
           </div>
-          <div className="auth-field">
+          <div className="ah-field">
             <label htmlFor="confirm">Confirm password</label>
             <input id="confirm" type="password" autoComplete="new-password" required
               value={confirm} onChange={(e) => setConfirm(e.target.value)} />
           </div>
-          {error && <div className="auth-error">{error}</div>}
-          <button type="submit" className="btn-gold auth-submit" disabled={loading}>
+          {error && <div className="ah-banner-error">{error}</div>}
+          <button type="submit" className="ah-btn-gold auth-submit" disabled={loading}>
             {loading ? 'Saving…' : 'Change password'}
           </button>
         </form>

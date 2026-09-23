@@ -101,7 +101,11 @@ export async function POST(request) {
     })
     .eq('id', created.user.id);
 
-  const loginUrl = new URL('/login', request.url).toString();
+  // SITE_URL (the real acquire-hub.com domain) takes priority over the request's own host so an
+  // invite sent while browsing a Netlify preview URL or *.netlify.app still emails a link to the
+  // canonical domain, not the internal one. Falls back to request.url when SITE_URL isn't set
+  // (local dev).
+  const loginUrl = new URL('/login', process.env.SITE_URL || request.url).toString();
 
   if (permError) {
     // The account itself is real and already usable — same philosophy as the email-failure

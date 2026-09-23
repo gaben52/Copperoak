@@ -1,7 +1,7 @@
 import ResetPasswordForm from '@/components/auth/ResetPasswordForm';
 
 export const metadata = {
-  title: 'OakFlow — Set password',
+  title: 'Acquire Hub — Set password',
 };
 
 export default function ResetPasswordPage() {

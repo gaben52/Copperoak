@@ -1,7 +1,7 @@
 import AcquisitionsApp from '@/components/acquisitions/AcquisitionsApp';
 
 export const metadata = {
-  title: 'OakFlow — Property Operations',
+  title: 'Acquire Hub — Property Operations',
 };
 
 export default function Page() {

@@ -8,7 +8,7 @@ export const STAGES = [
   { id: 'research', name: 'Researching',    short: 'Research',  color: '#6b7280' },
   { id: 'bidready', name: 'Bid ready',      short: 'Bid ready', color: '#8a6212' },
   { id: 'acquired', name: 'Acquired',       short: 'Acquired',  color: '#2a5599' },
-  { id: 'reno',     name: 'Under reno',     short: 'Reno',      color: '#8a6a3b' },
+  { id: 'reno',     name: 'Under reno',     short: 'Reno',      color: '#c99a3f' }, // keep in sync with --of-oak (components/design-system.js) — plain hex since this is a JS object, not CSS
   { id: 'listed',   name: 'Active Listing', short: 'Listed',    color: '#5b4a9c' },
   { id: 'contract', name: 'Under contract', short: 'Contract',  color: '#1f6470' },
   { id: 'sold',     name: 'Sold',           short: 'Sold',      color: '#1a6b40' },

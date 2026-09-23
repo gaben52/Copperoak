@@ -2,19 +2,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { authCSS } from './styles';
-
-const BRAND = (
-  <div className="auth-brand">
-    <div className="auth-brand-icon" aria-hidden="true">
-      <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-        <path d="M4 14.5c4.5 0 7-2.2 8.4-5.1" />
-        <path d="M10 16.5c0-5.2 2.6-8.6 6-10" />
-        <path d="M3.5 8.5c3 0 5-1.1 6.2-3" />
-      </svg>
-    </div>
-    <h1><span className="brand-a">Oak</span><span className="brand-b">Flow</span></h1>
-  </div>
-);
+import AuthBrand from './AuthBrand';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -87,17 +75,17 @@ export default function LoginForm() {
           AuctionPipeline.jsx / AcquisitionsApp.jsx. This CSS has quoted font-family + `>`. */}
       <style dangerouslySetInnerHTML={{ __html: authCSS() }} />
 
-      <div className="of-card auth-card">
-        {BRAND}
+      <div className="auth-card">
+        <AuthBrand />
 
         {checkingSession ? null : session ? (
           <>
             <div className="auth-title">Already signed in</div>
             <div className="auth-session-row">
               <span>{session.user.email}</span>
-              <button className="of-btn" onClick={handleLogout}>Log out</button>
+              <button className="ah-btn-plain" onClick={handleLogout}>Log out</button>
             </div>
-            <a className="of-btn of-btn-primary auth-submit" href={next} style={{ textDecoration: 'none', textAlign: 'center' }}>Continue to OakFlow</a>
+            <a className="ah-btn-gold auth-submit" href={next} style={{ textDecoration: 'none' }}>Continue to Acquire Hub</a>
           </>
         ) : (
           <>
@@ -105,21 +93,21 @@ export default function LoginForm() {
               <div className="auth-title">Sign in</div>
               <p className="auth-sub">Use the credentials from your invite email.</p>
             </div>
-            {disabled && <div className="auth-error">Your account has been disabled by an administrator. Contact them if you believe this is a mistake.</div>}
-            {timedOut && <div className="auth-error">You were signed out after a period of inactivity.</div>}
+            {disabled && <div className="ah-banner-error">Your account has been disabled by an administrator. Contact them if you believe this is a mistake.</div>}
+            {timedOut && <div className="ah-banner-error">You were signed out after a period of inactivity.</div>}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              <div className="auth-field">
+              <div className="ah-field">
                 <label htmlFor="email">Email</label>
                 <input id="email" type="email" autoComplete="email" required
                   value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
-              <div className="auth-field">
+              <div className="ah-field">
                 <label htmlFor="password">Password</label>
                 <input id="password" type="password" autoComplete="current-password" required
                   value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
-              {error && <div className="auth-error">{error}</div>}
-              <button type="submit" className="btn-gold auth-submit" disabled={loading}>
+              {error && <div className="ah-banner-error">{error}</div>}
+              <button type="submit" className="ah-btn-gold auth-submit" disabled={loading}>
                 {loading ? 'Signing in…' : 'Sign in'}
               </button>
             </form>

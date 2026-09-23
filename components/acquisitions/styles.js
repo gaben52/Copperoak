@@ -13,34 +13,44 @@ const ACQUISITIONS_LAYOUT = `
 body{ padding:var(--of-gutter) 0 56px; }
 
 /* ============================ Masthead ============================ */
+/* Full-bleed dark bar, matching Pipeline's .header (components/pipeline/styles.js) and the
+   Home/Admin sidebar shell's palette. body's own horizontal padding is already 0 here (see the
+   comment above), so only the top gutter needs cancelling with a negative margin — .masthead's
+   own padding supplies the horizontal gutter back. */
 .masthead{
-  display:flex;align-items:flex-start;justify-content:space-between;
+  display:flex;align-items:center;justify-content:space-between;
   gap:var(--of-s5);flex-wrap:wrap;
-  padding:0 var(--of-gutter) var(--of-s4);
-  border-bottom:1px solid var(--of-border);
+  margin:calc(-1 * var(--of-gutter)) 0 var(--of-s4);
+  padding:16px var(--of-gutter);
+  background:#12151c;
+  border-bottom:1px solid rgba(255,255,255,.07);
 }
 .brand,.brand:hover,.brand:visited,.brand *{ text-decoration:none!important; }
 .brand{ display:flex;align-items:center;gap:12px;min-width:0;color:inherit; }
 .brand-icon{
-  width:36px;height:36px;flex:none;
-  border-radius:var(--of-r);
-  background:var(--of-oak-soft);
-  border:1px solid #e6dccb;
-  color:var(--of-oak);
+  width:48px;height:48px;flex:none;
   display:flex;align-items:center;justify-content:center;
   font-size:17px;line-height:1;
 }
+.brand-icon img{ display:block;max-width:100%;max-height:100%; }
 .brand h1{
-  margin:0;font-size:19px;font-weight:650;letter-spacing:-.015em;color:var(--of-text);
+  margin:0;font-size:19px;font-weight:650;letter-spacing:-.015em;color:#fff;
 }
-.brand h1 .brand-a{ color:var(--of-text); }
-.brand h1 .brand-b{ color:var(--of-text-3);font-weight:500; }
+.brand h1 .brand-a{ color:#fff; }
+.brand h1 .brand-b{ color:var(--of-oak); }
 .brand-tag{
   display:block;height:auto;border:none;background:none;padding:0;border-radius:0;
-  font-size:11.5px;font-weight:500;color:var(--of-text-3);
+  font-size:11.5px;font-weight:500;color:rgba(255,255,255,.55);
   letter-spacing:.04em;margin-top:1px;white-space:normal;
 }
 .mast-actions{ display:flex;gap:7px;flex-wrap:wrap;align-items:center; }
+/* Every masthead button except the gold primary one gets a translucent light-on-dark pill —
+   same :not() specificity trick as Pipeline's .header-actions, so .btn-primary's own styling
+   (declared further down) is never touched by this. */
+.mast-actions .btn:not(.btn-primary){
+  background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.16);color:#fff;box-shadow:none;
+}
+.mast-actions .btn:not(.btn-primary):hover{ background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.24); }
 
 /* Anchor styled as a button (the back-link to the pipeline) */
 a.btn{ text-decoration:none; }
@@ -54,8 +64,8 @@ a.btn{ text-decoration:none; }
   transition:background .13s ease,border-color .13s ease,color .13s ease;
 }
 .btn:hover{ background:var(--of-surface-3); }
-.btn-primary{ background:var(--of-accent);border-color:var(--of-accent);color:var(--of-accent-text); }
-.btn-primary:hover{ background:var(--of-accent-hover);border-color:var(--of-accent-hover); }
+.btn-primary{ background:linear-gradient(135deg,#e3bd6e,var(--of-oak));border-color:var(--of-oak);color:#241a06; }
+.btn-primary:hover{ filter:brightness(1.05);border-color:var(--of-oak); }
 .btn-danger{ color:var(--of-err-text);border-color:var(--of-err-border); }
 .btn-danger:hover{ background:var(--of-err-bg); }
 .btn-win{ color:var(--of-ok-text);border-color:var(--of-ok-border); }
@@ -86,6 +96,7 @@ a.btn{ text-decoration:none; }
 .tape-cell.lead.reno::before{ background:var(--of-oak); }
 .tape-cell.lead.active::before{ background:var(--of-info-text); }
 .tape-cell.lead.sold::before{ background:var(--of-ok-text); }
+.tape-cell.lead.lose::before{ background:var(--of-err-text); }
 .tape-cell .k{
   font-size:10.5px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;
   color:var(--of-text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -359,7 +370,7 @@ tfoot td{
   background:var(--of-surface-3);border:1px solid var(--of-border);overflow:visible;
 }
 .margin-fill{ position:absolute;top:0;bottom:0;left:0;background:var(--of-text-2);border-radius:3px 0 0 3px; }
-.margin-fill.reno{ background:repeating-linear-gradient(135deg,var(--of-oak) 0 3px,#a98c5f 3px 6px); }
+.margin-fill.reno{ background:repeating-linear-gradient(135deg,var(--of-oak) 0 3px,#e0c68a 3px 6px); }
 .margin-fill.hot{ background:var(--of-err-text); }
 .margin-tick{ position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--of-text);border-radius:1px; }
 .margin-legend{

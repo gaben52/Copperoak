@@ -20,7 +20,7 @@ import PropertyDrawer from './PropertyDrawer';
 import ImportModal from './ImportModal';
 import ConfirmModal from './ConfirmModal';
 
-const BRAND_TEXT = 'OakFlow — Property Operations';
+const BRAND_TEXT = 'Acquire Hub — Property Operations';
 
 function periodRangeFor(period, repFrom, repTo) {
   const now = new Date(); const y = now.getFullYear();
@@ -465,10 +465,10 @@ export default function AcquisitionsApp() {
     { k: 'In reno', v: String(reno.length), sub: moneyShort(renoIn) + ' in · ' + moneyShort(renoLeft) + ' left to spend', cls: 'amber', lead: 'lead reno' },
     { k: 'Active homes', v: String(active.length), sub: moneyShort(deployed) + ' deployed · ' + moneyShort(pipeProfit) + ' projected', cls: 'steel', lead: 'lead active' },
     { k: 'Sold', v: soldAll.length, small: soldYtd.length + ' YTD', sub: moneyShort(ytdVol) + ' YTD volume', cls: 'jade', lead: 'lead sold' },
-    { k: 'Avg ROI', v: pct(avgRoi), sub: 'per closed home · all time', cls: avgRoi >= 0 ? 'jade' : 'ox', title: 'ROI = Return on Investment — profit as a percentage of total cash invested (purchase + reno + carry)' },
-    { k: 'Realized profit', v: moneyShort(allProfit), sub: moneyShort(ytdProfit) + ' YTD · ' + moneyShort(avgProfit) + ' avg/home', cls: allProfit >= 0 ? 'jade' : 'ox' },
-    { k: 'Capital deployed', v: moneyShort(deployed), sub: 'purchase + reno + carry · owned, not sold', cls: 'brass' },
-    { k: 'Capital returned', v: moneyShort(returned), sub: 'gross sale proceeds · sold homes', cls: 'jade' },
+    { k: 'Avg ROI', v: pct(avgRoi), sub: 'per closed home · all time', cls: avgRoi >= 0 ? 'jade' : 'ox', lead: avgRoi >= 0 ? 'lead sold' : 'lead lose', title: 'ROI = Return on Investment — profit as a percentage of total cash invested (purchase + reno + carry)' },
+    { k: 'Realized profit', v: moneyShort(allProfit), sub: moneyShort(ytdProfit) + ' YTD · ' + moneyShort(avgProfit) + ' avg/home', cls: allProfit >= 0 ? 'jade' : 'ox', lead: allProfit >= 0 ? 'lead sold' : 'lead lose' },
+    { k: 'Capital deployed', v: moneyShort(deployed), sub: 'purchase + reno + carry · owned, not sold', cls: 'brass', lead: 'lead reno' },
+    { k: 'Capital returned', v: moneyShort(returned), sub: 'gross sale proceeds · sold homes', cls: 'jade', lead: 'lead sold' },
   ];
 
   // nav counts
@@ -507,17 +507,13 @@ export default function AcquisitionsApp() {
       <style dangerouslySetInnerHTML={{ __html: ACQUISITIONS_CSS }} />
 
       <header className="masthead">
-        <a className="brand" href="/" title="Back to the OakFlow home screen">
+        <a className="brand" href="/" title="Back to the Acquire Hub home screen">
           <div className="brand-icon" aria-hidden="true">
-            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M4 14.5c4.5 0 7-2.2 8.4-5.1" />
-              <path d="M10 16.5c0-5.2 2.6-8.6 6-10" />
-              <path d="M3.5 8.5c3 0 5-1.1 6.2-3" />
-            </svg>
+            <img src="/assets/acquire-hub-logo.png" alt="" width="44" height="44" />
           </div>
           <div>
-            <h1><span className="brand-a">Oak</span><span className="brand-b">Flow</span></h1>
-            <div className="brand-tag">Property Operations</div>
+            <h1><span className="brand-a">Acquire</span> <span className="brand-b">Hub</span></h1>
+            <div className="brand-tag">Property Operations &middot; {myProfile?.fullName || 'Admin'}</div>
           </div>
         </a>
         <div className="mast-actions">

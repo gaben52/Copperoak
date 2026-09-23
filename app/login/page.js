@@ -1,7 +1,7 @@
 import LoginForm from '@/components/auth/LoginForm';
 
 export const metadata = {
-  title: 'OakFlow — Sign in',
+  title: 'Acquire Hub — Sign in',
 };
 
 export default function LoginPage() {

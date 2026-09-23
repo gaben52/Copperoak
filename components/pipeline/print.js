@@ -80,7 +80,7 @@ export function openPrintWindow(list, grouped, title) {
 export function printList(filteredRows, currentCountyPage) {
   if (!filteredRows.length) { alert('No properties match the current filters to print.'); return; }
   const grouped = currentCountyPage === 'ALL';
-  openPrintWindow(filteredRows, grouped, 'OakFlow — Auction List');
+  openPrintWindow(filteredRows, grouped, 'Acquire Hub — Auction List');
 }
 
 export function printSelected(rows, selectedIds) {
@@ -140,7 +140,7 @@ export function printWonDashboard(allRecords, currentMonth, fundingByMonth) {
       </table>`;
   }).join('<hr>');
   w.document.write(`
-    <html><head><title>OakFlow — Acquired Properties: ${esc(monthLabel(currentMonth))}</title>
+    <html><head><title>Acquire Hub — Acquired Properties: ${esc(monthLabel(currentMonth))}</title>
     <style>
       @page{size:landscape;}
       *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
@@ -154,7 +154,7 @@ export function printWonDashboard(allRecords, currentMonth, fundingByMonth) {
       table.dtbl th, table.dtbl td{border:1px solid #ccc;padding:5px 7px;text-align:left;}
       hr{margin:20px 0;border:none;border-top:2px solid #ccc;}
     </style></head><body>
-    <h1>OakFlow · Acquired Properties — ${esc(monthLabel(currentMonth))}</h1>
+    <h1>Acquire Hub · Acquired Properties — ${esc(monthLabel(currentMonth))}</h1>
     <div style="color:#666;font-size:12px;margin-bottom:10px;">Generated ${new Date().toLocaleString()}</div>
     ${groups.length ? rowsHTML : `<p>No properties marked "We Won" for ${esc(monthLabel(currentMonth))}.</p>`}
     </body></html>

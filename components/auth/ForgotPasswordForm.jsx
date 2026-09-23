@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { authCSS } from './styles';
+import AuthBrand from './AuthBrand';
 
 export default function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
@@ -27,23 +28,24 @@ export default function ForgotPasswordForm() {
   return (
     <div className="auth-wrap">
       <style dangerouslySetInnerHTML={{ __html: authCSS() }} />
-      <div className="of-card auth-card">
+      <div className="auth-card">
+        <AuthBrand />
         <div className="auth-title">Reset your password</div>
         {sent ? (
           <>
-            <div className="auth-success">If an account exists for that email, a reset link is on its way.</div>
-            <a className="of-btn auth-submit" href="/login" style={{ textDecoration: 'none', textAlign: 'center' }}>Back to sign in</a>
+            <div className="ah-banner-success">If an account exists for that email, a reset link is on its way.</div>
+            <a className="ah-btn-plain auth-submit" href="/login" style={{ textDecoration: 'none' }}>Back to sign in</a>
           </>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
             <p className="auth-sub">Enter the email on your account and we'll send a reset link.</p>
-            <div className="auth-field">
+            <div className="ah-field">
               <label htmlFor="email">Email</label>
               <input id="email" type="email" autoComplete="email" required
                 value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
-            {error && <div className="auth-error">{error}</div>}
-            <button type="submit" className="btn-gold auth-submit" disabled={loading}>
+            {error && <div className="ah-banner-error">{error}</div>}
+            <button type="submit" className="ah-btn-gold auth-submit" disabled={loading}>
               {loading ? 'Sending…' : 'Send reset link'}
             </button>
             <div className="auth-links">

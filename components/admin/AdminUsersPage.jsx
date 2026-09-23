@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import AppShell from '@/components/shell/AppShell';
 import { adminCSS } from './styles';
 import { SUPERADMIN_EMAIL } from '@/lib/auth/superadmin';
 import { PERMISSION_FIELDS } from './permissionFields';
@@ -53,12 +54,12 @@ function highlight(text, words) {
   const lowerWords = words;
   return parts.map((part, i) =>
     lowerWords.includes(part.toLowerCase())
-      ? <mark className="user-search-hit" key={i}>{part}</mark>
+      ? <mark className="ah-mark" key={i}>{part}</mark>
       : <span key={i}>{part}</span>
   );
 }
 
-export default function AdminUsersPage() {
+export default function AdminUsersPage({ user }) {
   const [users, setUsers] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
 
@@ -171,158 +172,145 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="admin-wrap">
+    <>
       {/* dangerouslySetInnerHTML — see the note in LoginForm.jsx (<style> raw-text + server
           HTML-escaping of string children is a guaranteed hydration mismatch otherwise). */}
       <style dangerouslySetInnerHTML={{ __html: adminCSS() }} />
-
-      <header className="admin-header">
-        <a className="brand" href="/" title="Back to the OakFlow home screen">
-          <div className="brand-icon" aria-hidden="true">
-            <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
-              <path d="M4 14.5c4.5 0 7-2.2 8.4-5.1" />
-              <path d="M10 16.5c0-5.2 2.6-8.6 6-10" />
-              <path d="M3.5 8.5c3 0 5-1.1 6.2-3" />
-            </svg>
-          </div>
-          <div>
-            <h1><span className="brand-a">Oak</span><span className="brand-b">Flow</span></h1>
-            <div className="tag">User Management</div>
-          </div>
-        </a>
-        <div className="header-actions">
-          <a className="of-btn" href="/">&#8962; Home</a>
+      <AppShell active="users" user={user}>
+        <div className="ah-page-head">
+          <h1>User Management</h1>
+          <p>Add a user and manage who has access to Acquire Hub, including roles, invites, and account status.</p>
         </div>
-      </header>
 
-      <div className="admin-grid">
-        <div className="of-card admin-card">
-          <h2>Invite a user</h2>
-          <p className="admin-card-sub">A temporary password is generated automatically and emailed to them — you never see or set it.</p>
+        <div className="ah-grid-2">
+          <div className="ah-card ah-card-pad">
+            <h2>Invite a user</h2>
+            <p className="ah-card-sub">A temporary password is generated automatically and emailed to them — you never see or set it.</p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="admin-field">
-              <label htmlFor="fullName">Full name</label>
-              <input id="fullName" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label htmlFor="email">Email</label>
-              <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label htmlFor="mobile">Mobile number</label>
-              <input id="mobile" type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} />
-            </div>
-            <div className="admin-field">
-              <label htmlFor="role">Role</label>
-              <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
-                {ROLES.map((r) => <option value={r.value} key={r.value}>{r.label}</option>)}
-              </select>
-            </div>
+            <form onSubmit={handleSubmit}>
+              <div className="ah-field">
+                <label htmlFor="fullName">Full name</label>
+                <input id="fullName" required value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+              <div className="ah-field">
+                <label htmlFor="email">Email</label>
+                <input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="ah-field">
+                <label htmlFor="mobile">Mobile number</label>
+                <input id="mobile" type="tel" value={mobile} onChange={(e) => setMobile(e.target.value)} />
+              </div>
+              <div className="ah-field">
+                <label htmlFor="role">Role</label>
+                <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
+                  {ROLES.map((r) => <option value={r.value} key={r.value}>{r.label}</option>)}
+                </select>
+              </div>
 
-            <div className="admin-field">
-              <label>Individual Permissions</label>
-              <div className="permission-checkboxes">
-                {PERMISSION_FIELDS.map((p) => (
-                  <label className="permission-checkbox" key={p.key}>
-                    <input type="checkbox" checked={!!permissions[p.key]}
-                      onChange={(e) => setPermissions((prev) => ({ ...prev, [p.key]: e.target.checked }))} />
-                    {p.label}
-                  </label>
-                ))}
+              <div className="ah-field">
+                <label>Individual Permissions</label>
+                <div className="permission-checkboxes">
+                  {PERMISSION_FIELDS.map((p) => (
+                    <label className="permission-checkbox" key={p.key}>
+                      <input type="checkbox" checked={!!permissions[p.key]}
+                        onChange={(e) => setPermissions((prev) => ({ ...prev, [p.key]: e.target.checked }))} />
+                      {p.label}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {result?.kind === 'error' && <div className="ah-banner-error">{result.message}</div>}
+              {result?.kind === 'warning' && <div className="ah-banner-warn">{result.message}</div>}
+              {result?.kind === 'success' && <div className="ah-banner-success">{result.message}</div>}
+
+              <button type="submit" className="ah-btn-gold" style={{ width: '100%' }} disabled={submitting}>
+                {submitting ? 'Inviting…' : 'Invite User'}
+              </button>
+            </form>
+          </div>
+
+          <div className="ah-card ah-card-pad">
+            <h2>Users ({users.length})</h2>
+            <p className="ah-card-sub">Everyone with an Acquire Hub account. Click a non-admin user's row to manage their state/county/property assignments; use the Status button to activate or deactivate their account.</p>
+
+            <div className="user-filters-row">
+              <div className="ah-field user-search-field">
+                <label htmlFor="userSearch">Search users</label>
+                <input id="userSearch" placeholder="Search by name, email, or role…"
+                  value={search} onChange={(e) => setSearch(e.target.value)} />
+              </div>
+              <div className="ah-field user-role-filter">
+                <label htmlFor="userRoleFilter">Role</label>
+                <select id="userRoleFilter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                  <option value="">All roles</option>
+                  {ROLES.map((r) => <option value={r.value} key={r.value}>{r.label}</option>)}
+                </select>
               </div>
             </div>
 
-            {result?.kind === 'error' && <div className="admin-error">{result.message}</div>}
-            {result?.kind === 'warning' && <div className="admin-warn">{result.message}</div>}
-            {result?.kind === 'success' && <div className="admin-success">{result.message}</div>}
+            {toggleError && <div className="ah-banner-error">{toggleError}</div>}
 
-            <button type="submit" className="btn-gold" style={{ width: '100%' }} disabled={submitting}>
-              {submitting ? 'Inviting…' : 'Invite User'}
-            </button>
-          </form>
-        </div>
-
-        <div className="of-card admin-card">
-          <h2>Users ({users.length})</h2>
-          <p className="admin-card-sub">Everyone with an OakFlow account. Click a non-admin user's row to manage their state/county/property assignments; use the Status button to activate or deactivate their account.</p>
-
-          <div className="user-filters-row">
-            <div className="admin-field user-search-field">
-              <label htmlFor="userSearch">Search users</label>
-              <input id="userSearch" placeholder="Search by name, email, or role…"
-                value={search} onChange={(e) => setSearch(e.target.value)} />
-            </div>
-            <div className="admin-field user-role-filter">
-              <label htmlFor="userRoleFilter">Role</label>
-              <select id="userRoleFilter" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-                <option value="">All roles</option>
-                {ROLES.map((r) => <option value={r.value} key={r.value}>{r.label}</option>)}
-              </select>
-            </div>
-          </div>
-
-          {toggleError && <div className="admin-error">{toggleError}</div>}
-
-          {loadingUsers ? (
-            <div className="admin-empty">Loading…</div>
-          ) : users.length === 0 ? (
-            <div className="admin-empty">No users yet.</div>
-          ) : sortedUsers.length === 0 ? (
-            <div className="admin-empty">
-              {search.trim() && roleFilter
-                ? `No ${ROLE_LABEL[roleFilter]} users match "${search.trim()}".`
-                : search.trim()
-                ? `No users match "${search.trim()}".`
-                : `No ${ROLE_LABEL[roleFilter]} users.`}
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="admin-users-table">
-                <thead>
-                  <tr>
-                    <th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedUsers.map((u) => (
-                    <tr key={u.id}
-                      className={u.id === topMatchId ? 'user-row-best-match' : undefined}
-                      onClick={u.role === 'admin' ? undefined : () => { window.location.href = `/admin/assignments?userId=${u.id}`; }}
-                      style={u.role === 'admin' ? undefined : { cursor: 'pointer' }}
-                      title={u.role === 'admin' ? 'Admin sees everything — no assignments to manage' : `Manage assignments for ${u.full_name}`}>
-                      <td>{highlight(u.full_name, searchWords)}</td>
-                      <td>{highlight(u.email, searchWords)}</td>
-                      <td>{u.mobile || '—'}</td>
-                      <td><span className="of-badge">{highlight(ROLE_LABEL[u.role] || u.role, searchWords)}</span></td>
-                      <td>
-                        {(() => {
-                          const isSelf = u.id === currentUserId;
-                          const isSuperadmin = u.email === SUPERADMIN_EMAIL;
-                          const title = isSelf
-                            ? "You can't deactivate your own account"
-                            : isSuperadmin
-                            ? "The superadmin account can't be deactivated"
-                            : (u.is_active ? 'Click to deactivate' : 'Click to activate');
-                          return (
-                            <button type="button"
-                              className={'of-badge of-badge-toggle ' + (u.is_active ? 'of-badge-ok' : 'of-badge-err')}
-                              disabled={isSelf || isSuperadmin || togglingId === u.id}
-                              title={title}
-                              onClick={(e) => { e.stopPropagation(); toggleActive(u); }}>
-                              {togglingId === u.id ? 'Updating…' : (u.is_active ? 'Active' : 'Deactivated')}
-                            </button>
-                          );
-                        })()}
-                      </td>
+            {loadingUsers ? (
+              <div className="ah-table-empty">Loading…</div>
+            ) : users.length === 0 ? (
+              <div className="ah-table-empty">No users yet.</div>
+            ) : sortedUsers.length === 0 ? (
+              <div className="ah-table-empty">
+                {search.trim() && roleFilter
+                  ? `No ${ROLE_LABEL[roleFilter]} users match "${search.trim()}".`
+                  : search.trim()
+                  ? `No users match "${search.trim()}".`
+                  : `No ${ROLE_LABEL[roleFilter]} users.`}
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table className="ah-table">
+                  <thead>
+                    <tr>
+                      <th>Name</th><th>Email</th><th>Mobile</th><th>Role</th><th>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {sortedUsers.map((u) => (
+                      <tr key={u.id}
+                        className={u.id === topMatchId ? 'ah-row-best-match' : undefined}
+                        onClick={u.role === 'admin' ? undefined : () => { window.location.href = `/admin/assignments?userId=${u.id}`; }}
+                        style={u.role === 'admin' ? undefined : { cursor: 'pointer' }}
+                        title={u.role === 'admin' ? 'Admin sees everything — no assignments to manage' : `Manage assignments for ${u.full_name}`}>
+                        <td>{highlight(u.full_name, searchWords)}</td>
+                        <td>{highlight(u.email, searchWords)}</td>
+                        <td>{u.mobile || '—'}</td>
+                        <td><span className="ah-badge">{highlight(ROLE_LABEL[u.role] || u.role, searchWords)}</span></td>
+                        <td>
+                          {(() => {
+                            const isSelf = u.id === currentUserId;
+                            const isSuperadmin = u.email === SUPERADMIN_EMAIL;
+                            const title = isSelf
+                              ? "You can't deactivate your own account"
+                              : isSuperadmin
+                              ? "The superadmin account can't be deactivated"
+                              : (u.is_active ? 'Click to deactivate' : 'Click to activate');
+                            return (
+                              <button type="button"
+                                className={'ah-badge ah-badge-toggle ' + (u.is_active ? 'ah-badge-ok' : 'ah-badge-err')}
+                                disabled={isSelf || isSuperadmin || togglingId === u.id}
+                                title={title}
+                                onClick={(e) => { e.stopPropagation(); toggleActive(u); }}>
+                                {togglingId === u.id ? 'Updating…' : (u.is_active ? 'Active' : 'Deactivated')}
+                              </button>
+                            );
+                          })()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </div>
+      </AppShell>
+    </>
   );
 }
