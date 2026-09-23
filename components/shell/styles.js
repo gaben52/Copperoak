@@ -42,10 +42,14 @@ const SHELL_LAYOUT = `
   color:var(--ah-text);
 }
 /* Logout's fade-out is driven by Framer Motion directly in AppShell.jsx (animate/transition on
-   the root motion.div), not a CSS class — full page reloads are used throughout this app (see
-   PageTransition.jsx), so this fade-out is the only "leaving" animation possible; /login's own
-   PageTransition fade-in (also Framer Motion) covers the arrival half. */
+   the root motion.div), not a CSS class; /login's own PageTransition fade-in (also Framer Motion)
+   covers the arrival half. */
+`;
 
+// The sidebar's own rules, injected once by AppSidebar (AppShell.jsx) from the root layout so it
+// stays mounted — and styled — across page changes. The full-screen apps add their variations on
+// top in their own later <style> tag (SHELL_FRAME).
+const SHELL_SIDEBAR = `
 /* ---------------------------------- Sidebar ---------------------------------- */
 /* Collapsed to a 72px icon-only rail by default (position:fixed, out of the flex flow — .ah-main
    carries a matching fixed margin-left below); hovering it grows it to the full 258px labeled
@@ -97,7 +101,32 @@ a.ah-nav-item:hover{ background:var(--ah-sidebar-bg-2);color:#fff; }
 .ah-promo-title{ font-size:15px;font-weight:700;line-height:1.28;color:#fff;letter-spacing:-.01em; }
 .ah-promo-divider{ width:26px;height:2px;background:var(--ah-gold);margin:12px 0 10px;border-radius:2px; }
 .ah-promo-brand{ font-size:10px;font-weight:650;letter-spacing:.14em;color:var(--ah-sidebar-text); }
+.ah-nav-short{ display:none; }
 
+/* Phones: the rail becomes a fixed bottom tab bar with short labels — identical on every page, so
+   it stays put across page changes on mobile too, and never competes with a page's own header for
+   the top edge. Touch has no hover, so the expanded state is neutralized here (a tap still fires
+   mouseenter). Pages reserve the bar's height via .ah-main's padding-bottom (SHELL_MAIN). */
+@media (max-width:768px){
+  .ah-sidebar,.ah-sidebar.expanded{
+    top:auto;bottom:0;left:0;right:0;width:100%;height:auto;
+    flex-direction:row;padding:4px 6px calc(4px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--ah-sidebar-border);
+    box-shadow:0 -10px 28px -14px rgba(6,9,13,.45);
+  }
+  .ah-sidebar-brand,.ah-sidebar-promo,.ah-sidebar.expanded .ah-sidebar-promo{ display:none; }
+  .ah-nav{ flex-direction:row;flex:1;gap:2px; }
+  .ah-nav-item{
+    flex:1;width:auto;min-width:0;flex-direction:column;justify-content:center;gap:3px;
+    padding:7px 2px 6px;font-size:10.5px;text-align:center;
+  }
+  .ah-nav-label,.ah-sidebar.expanded .ah-nav-label{ display:none; }
+  .ah-nav-short{ display:block;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+  .ah-nav-item.active::before{ top:0;bottom:auto;left:28%;right:28%;width:auto;height:2px;border-radius:0 0 2px 2px; }
+}
+`;
+
+const SHELL_MAIN = `
 /* ---------------------------------- Main / topbar ---------------------------------- */
 /* margin-left matches the sidebar's own COLLAPSED width, not its (hover-driven) current width —
    see the sidebar comment above for why that's what keeps expansion from reflowing this. */
@@ -231,18 +260,10 @@ a.ah-nav-item:hover{ background:var(--ah-sidebar-bg-2);color:#fff; }
 .ah-row-best-match:hover td{ background:var(--ah-gold-soft); }
 .ah-table-empty{ padding:32px 0;text-align:center;color:var(--ah-text-3);font-size:13px; }
 
-@media (max-width:960px){
-  /* Below this width the sidebar becomes a static horizontal top bar instead of a hover-expand
-     rail (hover has no equivalent on touch) — always fully labeled, never collapsed. */
-  .ah-shell{ flex-direction:column; }
-  .ah-sidebar,.ah-sidebar.expanded{ position:static;height:auto;width:100%;flex-direction:row;align-items:center;gap:14px;padding:14px 16px;box-shadow:none; }
-  .ah-sidebar-brand{ padding:0; }
-  .ah-sidebar-brand-text{ display:block; }
-  .ah-nav{ flex-direction:row;overflow-x:auto;flex:1; }
-  .ah-nav-item.active::before{ display:none; }
-  .ah-nav-label{ display:inline; }
-  .ah-sidebar-promo,.ah-sidebar.expanded .ah-sidebar-promo{ display:none; }
-  .ah-main{ margin-left:0; }
+/* Phones: the sidebar is a bottom tab bar there (see SHELL_SIDEBAR) — no left rail to clear,
+   but the bar's height has to stay clear at the bottom instead. */
+@media (max-width:768px){
+  .ah-main{ margin-left:0;padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
 }
 @media (max-width:560px){
   .ah-content{ padding:18px 16px 28px; }
@@ -250,6 +271,37 @@ a.ah-nav-item:hover{ background:var(--ah-sidebar-bg-2);color:#fff; }
 }
 `;
 
+// SidebarFrame (AppShell.jsx): the space beside the sidebar for a full-screen app — Pipeline,
+// Partner Portal, Property Operations — whose own stylesheet (injected after this one) owns body's
+// font, color and padding. The .ah-sidebar rules here are unscoped on purpose: the sidebar lives in
+// the root layout, outside this page, and they only apply while this page's <style> is mounted.
+// Those apps pad <body> and pull their dark header out to the edges with matching negative
+// margins, which the fixed sidebar + .ah-main's margin leaves intact at every width. z-index drops
+// below the apps' modal overlays/drawers (40+) so they cover the sidebar, while staying above their
+// sticky table headers and dropdowns (≤5). The sidebar's logo is hidden because each app's own
+// header shows it right beside the rail — visibility, not display:none, so the nav icons keep the
+// exact position they have on Home. On phones the apps' bottom toasts are lifted above the tab bar.
+const SHELL_FRAME = `
+.ah-shell-framed{ font-family:inherit;color:inherit;min-height:0; }
+.ah-sidebar{ z-index:30; }
+.ah-sidebar-brand{ visibility:hidden; }
+@media (max-width:768px){
+  .toast{ margin-bottom:calc(62px + env(safe-area-inset-bottom)); }
+}
+@media print{
+  .ah-sidebar{ display:none; }
+  .ah-shell-framed .ah-main{ margin-left:0;padding-bottom:0; }
+}
+`;
+
+export function sidebarCSS() {
+  return SHELL_TOKENS + SHELL_SIDEBAR;
+}
+
 export function shellCSS() {
-  return SHELL_TOKENS + SHELL_LAYOUT;
+  return SHELL_TOKENS + SHELL_LAYOUT + SHELL_MAIN;
+}
+
+export function framedShellCSS() {
+  return SHELL_TOKENS + SHELL_LAYOUT + SHELL_MAIN + SHELL_FRAME;
 }

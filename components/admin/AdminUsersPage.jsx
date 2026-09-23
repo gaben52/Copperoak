@@ -176,7 +176,7 @@ export default function AdminUsersPage({ user }) {
       {/* dangerouslySetInnerHTML — see the note in LoginForm.jsx (<style> raw-text + server
           HTML-escaping of string children is a guaranteed hydration mismatch otherwise). */}
       <style dangerouslySetInnerHTML={{ __html: adminCSS() }} />
-      <AppShell active="users" user={user}>
+      <AppShell user={user}>
         <div className="ah-page-head">
           <h1>User Management</h1>
           <p>Add a user and manage who has access to Acquire Hub, including roles, invites, and account status.</p>

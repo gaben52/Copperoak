@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import TransitionLink from '@/components/TransitionLink';
 import { createClient } from '@/lib/supabase/server';
 import AppShell from '@/components/shell/AppShell';
 import { homeCSS } from '@/components/home/styles';
@@ -182,7 +183,7 @@ export default async function HomePage() {
           children, so dangerouslySetInnerHTML is required to avoid a hydration mismatch for CSS
           containing quotes/`>` — same reasoning as AuctionPipeline.jsx / AcquisitionsApp.jsx. */}
       <style dangerouslySetInnerHTML={{ __html: homeCSS() }} />
-      <AppShell active="home" user={profile}>
+      <AppShell user={profile}>
         <section className="ah-hero">
           <div className="ah-hero-content">
             <div className="ah-hero-eyebrow">Welcome back,</div>
@@ -195,15 +196,17 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* TransitionLink, not <a>: client-side navigation with a fade out/in instead of a full
+            page reload — see components/PageTransition.jsx. */}
         <section className="ah-apps">
           {APP_CARDS.map((c) => (
-            <a className={`ah-app-card ${c.theme}`} href={c.href} key={c.key}>
+            <TransitionLink className={`ah-app-card ${c.theme}`} href={c.href} key={c.key}>
               <span className="ah-app-arrow">{CARD_ARROW}</span>
               <span className="ah-app-icon">{c.icon}</span>
               <h3>{c.title}</h3>
               <p>{c.desc}</p>
               <span className="ah-app-cta">{c.cta} {CARD_ARROW}</span>
-            </a>
+            </TransitionLink>
           ))}
         </section>
 

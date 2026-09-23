@@ -1,8 +1,10 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { usePathname } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
 import { createClient } from '@/lib/supabase/client';
-import { shellCSS } from './styles';
+import TransitionLink from '@/components/TransitionLink';
+import { shellCSS, framedShellCSS, sidebarCSS } from './styles';
 
 // Same icon set as the old Home page's sidebar (app/page.js) — duplicated here rather than
 // imported, since app/page.js is a Server Component and this file is a Client Component ('use
@@ -59,12 +61,14 @@ const ICON = {
 
 const AH_LOGO_MARK = <img src="/assets/acquire-hub-logo.png" alt="Acquire Hub" width="44" height="44" />;
 
+// `short`: the label on the phone bottom tab bar (see SHELL_SIDEBAR in styles.js), where the full
+// labels don't fit five across.
 const NAV_ITEMS = [
-  { key: 'home', label: 'Home', href: '/', icon: ICON.home },
-  { key: 'pipeline', label: 'Auction Pipeline', href: '/pipeline', icon: ICON.pipeline },
-  { key: 'partner', label: 'Partner Portal', href: '/partner-portal', icon: ICON.partner },
-  { key: 'operations', label: 'Property Operations', href: '/acquisitions', icon: ICON.operations },
-  { key: 'users', label: 'User Management', href: '/admin/users', icon: ICON.users },
+  { key: 'home', label: 'Home', short: 'Home', href: '/', icon: ICON.home },
+  { key: 'pipeline', label: 'Auction Pipeline', short: 'Pipeline', href: '/pipeline', icon: ICON.pipeline },
+  { key: 'partner', label: 'Partner Portal', short: 'Partners', href: '/partner-portal', icon: ICON.partner },
+  { key: 'operations', label: 'Property Operations', short: 'Operations', href: '/acquisitions', icon: ICON.operations },
+  { key: 'users', label: 'User Management', short: 'Users', href: '/admin/users', icon: ICON.users },
 ];
 
 function initialsOf(name, email) {
@@ -116,22 +120,99 @@ function highlight(text, words) {
   );
 }
 
-// `active`: one of NAV_ITEMS' keys. `user`: {full_name, email, role} — every caller already has
-// this from its own server-side session fetch (see app/page.js and the admin route page.js
-// wrappers), so this component never re-fetches it itself. `children` is the page's own content,
-// rendered inside .ah-content — for a Server Component caller, that content stays server-rendered
-// even though it's passed through this Client Component as `children` (a plain React element,
-// not re-executed here).
-export default function AppShell({ active, user, children }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const userMenuRef = useRef(null);
-
+// `active`: one of NAV_ITEMS' keys.
+function Sidebar({ active }) {
   // Collapsed to an icon-only rail by default; hovering it (mouse moves to the left edge of the
   // screen, where the rail lives) expands it to the full labeled sidebar as a floating overlay —
   // .ah-main's own margin-left stays pinned to the collapsed width (see styles.js) so expanding
   // never reflows the page content, it just floats the wider sidebar on top of it.
-  const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <aside className={`ah-sidebar${expanded ? ' expanded' : ''}`}
+      onMouseEnter={() => setExpanded(true)}
+      onMouseLeave={() => setExpanded(false)}>
+      <TransitionLink className="ah-sidebar-brand" href="/">
+        <div className="ah-logo-mark">{AH_LOGO_MARK}</div>
+        <div className="ah-sidebar-brand-text">
+          <div className="ah-wordmark">ACQUIRE <span className="ah-wordmark-b">HUB</span></div>
+          <div className="ah-wordmark-tag">FIND<span className="ah-dot">&middot;</span>ACQUIRE<span className="ah-dot">&middot;</span>SCALE</div>
+        </div>
+      </TransitionLink>
+
+      <nav className="ah-nav">
+        {NAV_ITEMS.map((item) => (
+          <TransitionLink className={`ah-nav-item${active === item.key ? ' active' : ''}`} href={item.href} key={item.key} title={item.label}>
+            <span className="ah-nav-icon">{item.icon}</span>
+            <span className="ah-nav-label">{item.label}</span>
+            <span className="ah-nav-short">{item.short}</span>
+          </TransitionLink>
+        ))}
+      </nav>
+
+      <div className="ah-sidebar-promo">
+        <div className="ah-promo-inner">
+          <div className="ah-promo-title">Turn opportunity into equity.</div>
+          <div className="ah-promo-divider" />
+          <div className="ah-promo-brand">ACQUIRE HUB</div>
+        </div>
+      </div>
+    </aside>
+  );
+}
+
+// Which nav item a path belongs to — null means no sidebar on that path at all (the auth screens:
+// /login, /change-password, /forgot-password, /reset-password).
+function navKeyFor(pathname) {
+  if (pathname.startsWith('/admin')) return 'users';
+  return NAV_ITEMS.find((item) => item.href === pathname)?.key || null;
+}
+
+// The one sidebar instance, rendered from the root layout — outside app/template.js's per-page
+// fade — so it stays mounted and still while pages change beside it. `enabled`: the signed-in user
+// is an admin, resolved server-side in the layout (every login/logout is a full page load, so it's
+// always current). Every other role can reach just one app page, so a nav rail would only offer
+// links middleware bounces them off. The pages it appears on reserve its width themselves
+// (.ah-main's margin, via AppShell / SidebarFrame).
+export function AppSidebar({ enabled }) {
+  const pathname = usePathname();
+  const active = navKeyFor(pathname);
+  if (!enabled || !active) return null;
+  return (
+    <>
+      {/* dangerouslySetInnerHTML: same hydration reason as AppShell below. */}
+      <style dangerouslySetInnerHTML={{ __html: sidebarCSS() }} />
+      <Sidebar active={active} />
+    </>
+  );
+}
+
+// The space beside the sidebar, with no topbar — for admin on the three full-screen apps
+// (Pipeline, Partner Portal, Property Operations), which each already carry their own header with
+// its actions and Log Out. Mounted from those routes' page.js for role 'admin' only, matching
+// AppSidebar's own admin-only rule.
+export function SidebarFrame({ children }) {
+  return (
+    <div className="ah-shell ah-shell-framed">
+      {/* Before the app's own <style> (inside children), so the app's body rules win over the
+          shell's — see SHELL_FRAME in styles.js. dangerouslySetInnerHTML: same hydration reason
+          as AppShell below. */}
+      <style dangerouslySetInnerHTML={{ __html: framedShellCSS() }} />
+      <div className="ah-main">{children}</div>
+    </div>
+  );
+}
+
+// Topbar + content area beside the sidebar (AppSidebar, root layout). `user`: {full_name, email,
+// role} — every caller already has this from its own server-side session fetch (see app/page.js
+// and the admin route page.js wrappers), so this component never re-fetches it itself. `children`
+// is the page's own content, rendered inside .ah-content — for a Server Component caller, that
+// content stays server-rendered even though it's passed through this Client Component as
+// `children` (a plain React element, not re-executed here).
+export default function AppShell({ user, children }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const userMenuRef = useRef(null);
 
   const [query, setQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
@@ -187,9 +268,8 @@ export default function AppShell({ active, user, children }) {
       await supabase.auth.signOut();
     } finally {
       // Fades the whole shell out (Framer Motion, on the root motion.div above) before the hard
-      // navigation — this app navigates via full page reloads throughout (no client router
-      // mounting two apps' CSS at once, see PageTransition.jsx), so this is the only place a
-      // "leaving" animation can happen; /login's own PageTransition fade-in covers the arrival.
+      // navigation — a full page reload on purpose, so no signed-in client state survives logout;
+      // /login's own PageTransition fade-in covers the arrival.
       setTimeout(() => { window.location.href = '/login'; }, 220);
     }
   }
@@ -200,7 +280,7 @@ export default function AppShell({ active, user, children }) {
   return (
     // Framer Motion drives the logout fade directly (animate/transition) instead of a CSS class
     // toggle — the arrival half of this same "screen opening/closing" motion is PageTransition.jsx
-    // (also Framer Motion, wrapping every page's children in root layout), so login's fade-in and
+    // (also Framer Motion, wrapping every page via app/template.js), so login's fade-in and
     // this fade-out-before-redirect are both the same animation library end to end.
     <motion.div className="ah-shell"
       animate={{ opacity: loggingOut ? 0 : 1 }}
@@ -210,35 +290,6 @@ export default function AppShell({ active, user, children }) {
           children, so dangerouslySetInnerHTML is required to avoid a hydration mismatch for CSS
           containing quotes/`>` — same reasoning as AuctionPipeline.jsx / AcquisitionsApp.jsx. */}
       <style dangerouslySetInnerHTML={{ __html: shellCSS() }} />
-
-      <aside className={`ah-sidebar${sidebarExpanded ? ' expanded' : ''}`}
-        onMouseEnter={() => setSidebarExpanded(true)}
-        onMouseLeave={() => setSidebarExpanded(false)}>
-        <a className="ah-sidebar-brand" href="/">
-          <div className="ah-logo-mark">{AH_LOGO_MARK}</div>
-          <div className="ah-sidebar-brand-text">
-            <div className="ah-wordmark">ACQUIRE <span className="ah-wordmark-b">HUB</span></div>
-            <div className="ah-wordmark-tag">FIND<span className="ah-dot">&middot;</span>ACQUIRE<span className="ah-dot">&middot;</span>SCALE</div>
-          </div>
-        </a>
-
-        <nav className="ah-nav">
-          {NAV_ITEMS.map((item) => (
-            <a className={`ah-nav-item${active === item.key ? ' active' : ''}`} href={item.href} key={item.key} title={item.label}>
-              <span className="ah-nav-icon">{item.icon}</span>
-              <span className="ah-nav-label">{item.label}</span>
-            </a>
-          ))}
-        </nav>
-
-        <div className="ah-sidebar-promo">
-          <div className="ah-promo-inner">
-            <div className="ah-promo-title">Turn opportunity into equity.</div>
-            <div className="ah-promo-divider" />
-            <div className="ah-promo-brand">ACQUIRE HUB</div>
-          </div>
-        </div>
-      </aside>
 
       <div className="ah-main">
         <header className="ah-topbar">

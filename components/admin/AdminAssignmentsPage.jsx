@@ -159,7 +159,7 @@ export default function AdminAssignmentsPage({ user }) {
   return (
     <>
       <style dangerouslySetInnerHTML={{ __html: adminCSS() }} />
-      <AppShell active="users" user={user}>
+      <AppShell user={user}>
         <div className="ah-page-head">
           <h1>Assignments</h1>
           <p>Who can see what — a state grant covers every county and property in it.</p>

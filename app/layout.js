@@ -1,7 +1,9 @@
 import SmoothScrollProvider from '@/components/SmoothScrollProvider';
-import PageTransition from '@/components/PageTransition';
 import InactivityTimeout from '@/components/auth/InactivityTimeout';
+import { NavigationProvider } from '@/components/PageTransition';
+import { AppSidebar } from '@/components/shell/AppShell';
 import ReduxProvider from '@/providers/ReduxProvider';
+import { getSessionProfile } from '@/lib/auth/session';
 
 export const metadata = {
   title: {
@@ -11,7 +13,10 @@ export const metadata = {
   description: 'OakFlow — property acquisition and disposition management for Copper Oak Asset Management.',
 };
 
-export default function RootLayout({ children }) {
+export default async function RootLayout({ children }) {
+  // Only runs on a full page load — client-side navigations don't re-render the root layout — and
+  // every login/logout is a full page load, so this is always the current user.
+  const { profile } = await getSessionProfile();
   return (
     <html lang="en">
       <head>
@@ -31,9 +36,14 @@ export default function RootLayout({ children }) {
           padding are owned by the design system + each app's stylesheet. */}
       <body>
         <ReduxProvider>
-          <SmoothScrollProvider />
-          <InactivityTimeout />
-          <PageTransition>{children}</PageTransition>
+          <NavigationProvider>
+            <SmoothScrollProvider />
+            <InactivityTimeout />
+            {/* Here rather than in each page, so it stays still across page changes — see AppSidebar. */}
+            <AppSidebar enabled={profile?.role === 'admin'} />
+            {/* Page fade lives in app/template.js, which re-mounts per navigation (this layout doesn't). */}
+            {children}
+          </NavigationProvider>
         </ReduxProvider>
       </body>
     </html>
